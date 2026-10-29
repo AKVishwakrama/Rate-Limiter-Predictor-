@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+ratelimiter:
+  strategy: token-bucket   # startup default; switch at runtime via POST /admin/strategy
+  token-bucket:
+    capacity: 20
+    refill-rate-per-sec: 10
+  sliding-window:
+    window-size-ms: 1000
+    max-requests: 20
+  ml-adaptive:
+    window-size-ms: 1000
+    min-threshold: 5
+    max-threshold: 20
+    target-global-capacity-per-sec: 50   # tune to your simulated backend's real capacity
+
+ml-adaptive:
+  predictor-url: http://localhost:8000   # phase3-ml-predictor's FastAPI service
+
+metrics:
+  output-file: metrics/requests.csv
+
+logging:
+  level:
+    root: INFO
