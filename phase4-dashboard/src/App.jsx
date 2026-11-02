@@ -22,6 +22,7 @@ export default function App() {
   const [history, setHistory] = useState([])
   const [connectionError, setConnectionError] = useState(false)
   const [totals, setTotals] = useState({ allowed: 0, rejected: 0 })
+  const [prediction, setPrediction] = useState(null)
   const secondsElapsed = useRef(0)
 
   useEffect(() => {
@@ -33,6 +34,12 @@ export default function App() {
 
         setConnectionError(false)
         setActiveStrategy(data.activeStrategy)
+        setPrediction({
+          available: data.predictionAvailable,
+          predictedNextSecond: data.predictedNextSecond,
+          modelType: data.modelType,
+          appliedThreshold: data.appliedThreshold,
+        })
         secondsElapsed.current += 1
 
         setTotals((prev) => ({
@@ -150,6 +157,60 @@ export default function App() {
         </div>
 
         <EventLog activeStrategy={activeStrategy} threshold={latest?.threshold} />
+        {activeStrategy === 'ml-adaptive' && (
+          <div className="bg-panel-900 border border-hairline rounded-lg p-5 space-y-4">
+            <div>
+              <h2 className="text-lg font-display font-semibold text-cream-100">
+                ML Prediction Monitor
+              </h2>
+              <p className="text-xs text-taupe-400 mt-1">
+                Latest prediction received by the Java gateway
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-panel-950 rounded-lg p-4">
+                <p className="text-sm text-taupe-400">
+                  Predicted traffic (next second)
+                </p>
+
+                <p className="text-3xl font-display font-semibold text-brass-400 mt-2">
+                  {prediction?.available
+                    ? prediction.predictedNextSecond.toFixed(2)
+                    : 'Waiting...'}
+                </p>
+
+                <p className="text-xs text-taupe-400 mt-1">
+                  Requests / second
+                </p>
+              </div>
+
+              <div className="bg-panel-950 rounded-lg p-4">
+                <p className="text-sm text-taupe-400">
+                  Applied per-client threshold
+                </p>
+
+                <p className="text-3xl font-display font-semibold text-sage-400 mt-2">
+                  {prediction?.available
+                    ? prediction.appliedThreshold
+                    : '—'}
+                </p>
+
+                <p className="text-xs text-taupe-400 mt-1">
+                  Requests / second / client
+                </p>
+              </div>
+            </div>
+
+            <div className="text-xs text-taupe-400">
+              Model: {prediction?.modelType ?? 'Waiting for prediction'}
+              {' · '}
+              {prediction?.available
+                ? 'Prediction received'
+                : 'Predictor unavailable or waiting for first prediction'}
+            </div>
+          </div>
+        )}
 
         <div className="bg-panel-900 border border-hairline rounded-lg p-4">
           <p className="text-sm text-taupe-400 mb-2">Allowed vs Rejected requests / second</p>

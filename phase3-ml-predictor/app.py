@@ -25,6 +25,7 @@ import os
 from pathlib import Path
 
 import joblib
+from fastapi import FastAPI, HTTPException, Request
 import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -96,3 +97,29 @@ def predict(req: PredictRequest):
         lags_used=lags,
         model_type=_bundle["model_type"],
     )
+
+
+
+
+
+
+
+
+
+@app.post("/debug/echo")
+async def debug_echo(request: Request):
+    raw_body = await request.body()
+
+    print("========== JAVA REQUEST DEBUG ==========")
+    print("Method:", request.method)
+    print("Content-Type:", request.headers.get("content-type"))
+    print("Content-Length:", request.headers.get("content-length"))
+    print("Raw body:", repr(raw_body))
+    print("========================================")
+
+    return {
+        "method": request.method,
+        "content_type": request.headers.get("content-type"),
+        "content_length": request.headers.get("content-length"),
+        "raw_body": raw_body.decode("utf-8", errors="replace")
+    }
